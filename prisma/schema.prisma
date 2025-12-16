@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String?
+  email     String    @unique
+  password  String
+  role      String    @default("USER")
+  createdAt DateTime  @default(now())
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  phone     String
+  altPhone  String?
+  addrType  String
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  postcode  String
+  country   String   @default("India")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  landmark  String?
+  isDefault Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  orders    Order[]
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+  total     Int
+  status    String      @default("PLACED")
+  userId    String?
+  addressId String?
+  address   Address?    @relation(fields: [addressId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  price     Int
+  variant   String
+  size      String?
+  qty       Int
+  img       String?
+  order     Order   @relation(fields: [orderId], references: [id])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int
+  createdAt   DateTime @default(now())
+  categoryId  String
+  images      Json
+  slug        String   @unique
+  stock       Int      @default(0)
+  colors      String[]
+  sizes       String[]
+  soldCount   Int      @default(0)
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  cover    String?
+  products Product[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  productId String
+  name      String
+  price     Int
+  variant   String
+  size      String?
+  qty       Int
+  img       String?
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId, variant, size])
+}
+
+enum OrderStatus {
+  PLACED
+  PACKED
+  SHIPPED
+  FULFILLED
+  CANCELLED
+}

@@ -1,12 +1,3 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
   id        String    @id @default(cuid())
   name      String?
@@ -117,3 +108,18 @@ enum OrderStatus {
   FULFILLED
   CANCELLED
 }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/* 👇 ADD THIS */
+generator seed {
+  provider = "prisma-client-js"
+}
+
